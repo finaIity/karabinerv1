@@ -1,5 +1,5 @@
 # Karabiner
-First project in rust, creating a password generator for CLI. should work on macOS and Linux, probablyt not going to make it windows-compatible
+First project in rust, creating a password generator for CLI. should work on macOS and Linux, probably not going to make it windows-compatible
 
 Clone repo & use ```cargo build``` to compile and ```cargo run``` to start the program.
 
