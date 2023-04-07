@@ -6,7 +6,7 @@ Clone repo & use ```cargo build``` to compile and ```cargo run``` to start the p
 Goals for this project:
   1. Generate password ✅
   2. Copy to clipboard ✅
-  3. Start building a password manager protected by password
+  3. Start building a password manager (optional : protected by password)
   4. Use cryptography to safely store passwords
   5. Make cool interface :)
   
