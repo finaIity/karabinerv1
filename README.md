@@ -1,14 +1,14 @@
 # Karabiner
-First project in rust, creating a password generator for CLI. should work on macOS and Linux, probably not going to make it windows-compatible. I would love feedback, ideas and criticism !
+First project in rust, creating a CLI  password generator for Linux and macOS. should work on macOS and Linux. Feedback, ideas and criticism are welcome.
 
 Make sure you have [rust](https://www.rust-lang.org/tools/install) and [xclip](https://github.com/astrand/xclip) installed first.
 Clone repo & use ```cargo build``` to compile and ```cargo run``` to start the program.
 
 Goals for this project:
-  1. Generate password ✅
-  2. Copy to clipboard ✅
-  3. Start building a password manager (optional : protected by password)
-  4. Use cryptography to safely store passwords
+  1. Generate password & save to file in folder ✅
+  2. Copy to clipboard
+  3. First startup with personal key
+  4. Start building a password manager (optional : protected by password) 
   5. Make cool interface :)
   
 Ignore Inarius, I just think he looks cool
