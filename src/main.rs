@@ -3,17 +3,21 @@ use std::fs;
 use std::io::{self, Write};
 use std::process::Command;
 use crate::savetf::savetf;
+use crate::hash::hash_key;
 use crate::userkey::encrypt;
 use crate::file_access::read_decrypt;
 
 mod file_access;
 mod savetf;
 mod userkey;
+mod hash;
 
-const USER_KEY_FILE: &str = "user_key.txt";
+const USER_KEY_FILE: &str = "safe/user_key.txt";
 
 fn save_user_key(key: &str) -> io::Result<()> {
-    fs::write(USER_KEY_FILE, key)
+    let hashed_key = hash_key(key);
+    fs::create_dir_all("safe")?;
+    fs::write(USER_KEY_FILE, hashed_key)
 }
 
 fn load_user_key() -> io::Result<String> {
@@ -64,17 +68,28 @@ fn gen_filename() -> String {
 fn main() -> io::Result<()> {
     println!("Welcome to Karabiner!");
 
-    let personal_key = match load_user_key() {
-        Ok(key) => key,
-        Err(_) => {
-            let mut key = String::new();
-            print!("Enter your personal key: ");
-            io::stdout().flush().unwrap();
-            io::stdin().read_line(&mut key).expect("Failed to read input");
-            let key = key.trim().to_string();
-            save_user_key(&key)?;
+    let personal_key = if fs::metadata(USER_KEY_FILE).is_ok() {
+        let mut key = String::new();
+        print!("Enter your personal key: ");
+        io::stdout().flush().unwrap();
+        io::stdin().read_line(&mut key).expect("Failed to read input");
+        let key = key.trim().to_string();
+
+        let stored_key = load_user_key()?;
+        if key == stored_key {
             key
+        } else {
+            eprintln!("Invalid personal key.");
+            return Ok(());
         }
+    } else {
+        let mut key = String::new();
+        print!("Set your personal key: ");
+        io::stdout().flush().unwrap();
+        io::stdin().read_line(&mut key).expect("Failed to read input");
+        let key = key.trim().to_string();
+        save_user_key(&key)?;
+        key
     };
 
     loop {
