@@ -6,9 +6,9 @@ Clone repo & use ```cargo build``` to compile and ```cargo run``` to start the p
 
 Goals for this project:
   1. Generate password & save to file in folder ✅
-  2. Copy to clipboard
-  3. First startup with personal key
-  4. Start building a password manager (optional : protected by password) 
+  2. Copy to clipboard ✅
+  3. First startup with personal key ✅(kinda)
+  4. Start building a password manager (optional
   5. Make cool interface :)
   
 Ignore Inarius, I just think he looks cool
