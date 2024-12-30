@@ -1,11 +1,12 @@
-use std::fs::File;
 use std::io::Write;
 use rand::prelude::*;
 use std::io::{self};
 use std::process::Command;
-
 use crate::hash::hash_pw;
+use crate::savetf::savetf;
+mod savetf;
 mod hash;
+
 
 fn gen_pass(length: usize) -> String {
     let charset= "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
@@ -24,14 +25,20 @@ fn clipboard_copy(text: &str) -> io::Result <()> {
     .arg("clipboard")
     .stdin(std::process::Stdio::piped())
     .spawn()?;
-    cmd.stdin.as_mut().unwrap().write_all(text.as_bytes())?;
-    Ok(())
-}
 
-fn save_to_file(filename: &str, pass_hashed: &str) {
-    let mut file = File::create(filename).expect("Failed to create file");
-    file.write_all(pass_hashed.as_bytes())
-        .expect("Failed to write password to file");
+    if let Some(mut stdin) = cmd.stdin.take() {
+        stdin.write_all(text.as_bytes())?;
+    } else {
+        eprintln!("Failed to open stdin");
+        return Err(io::Error::new(io::ErrorKind::Other, "Failed to open stdin"));
+    }
+
+    let output = cmd.wait_with_output()?;
+    if !output.status.success() {
+        eprintln!("Failed to execute xclip: {}", output.status);
+        return Err(io::Error::new(io::ErrorKind::Other, "Failed to execute xclip"));
+    }
+    Ok(())
 }
 
 fn gen_filename() -> String {
@@ -58,7 +65,7 @@ fn main() ->io::Result<()> {
     if save_password.trim().to_uppercase() == "Y" {
         let filename = gen_filename();
         let hashed = hash_pw(&password);
-        save_to_file(&filename, &hashed);
+        savetf(&filename, &hashed);
         println!("Password saved to file {}", filename)
     }
 
