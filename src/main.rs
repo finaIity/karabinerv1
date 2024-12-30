@@ -1,11 +1,11 @@
 use rand::prelude::*;
 use std::io::{self, Write};
 use std::process::Command;
-use crate::hash::hash_pw;
 use crate::savetf::savetf;
-mod savetf;
-mod hash;
+use crate::userkey::{encrypt, decrypt};
 
+mod savetf;
+mod userkey;
 
 fn gen_pass(length: usize) -> String {
     let charset= "ABCDEFGHIJKLMNOPQRSTUVWXYZ\
@@ -51,6 +51,13 @@ fn main() -> io::Result<()> {
     println!("Welcome to Karabiner!");
 
     let mut length = String::new();
+    let mut personal_key = String::new();
+
+    print!("Enter your personal key: ");
+    io::stdout().flush().unwrap();
+    io::stdin().read_line(&mut personal_key).expect("Failed to read input");
+    let personal_key = personal_key.trim().as_bytes();
+
     loop {
         print!("Enter the desired password length (7-25): ");
         io::stdout().flush().unwrap();
@@ -68,15 +75,24 @@ fn main() -> io::Result<()> {
 
                 if save_password.trim().to_uppercase() == "Y" {
                     let filename = gen_filename();
-                    let hashed = hash_pw(&password);
-                    let _ = savetf(&filename, &hashed);
+                    let encrypted_password = encrypt(&password, personal_key);
+                    let _ = savetf(&filename, &encrypted_password);
                     println!("Password saved to file {}", filename);
                 }
 
-                if clipboard_copy(&password).is_ok() {
-                    println!("Password copied to clipboard!");
-                } else {
-                    eprintln!("Error: Couldn't copy password to clipboard.");
+                let mut copy_to_clipboard = String::new();
+                print!("Do you want to copy the password to clipboard? Y/N: ");
+                io::stdout().flush().unwrap();
+                io::stdin().read_line(&mut copy_to_clipboard).expect("Failed to read input");
+
+                if copy_to_clipboard.trim().to_uppercase() == "Y" {
+                    let encrypted_password = encrypt(&password, personal_key);
+                    let decrypted_password = decrypt(&encrypted_password, personal_key);
+                    if clipboard_copy(&decrypted_password).is_ok() {
+                        println!("Password copied to clipboard.");
+                    } else {
+                        eprintln!("Error: Couldn't copy password to clipboard.");
+                    }
                 }
                 break;
             } else {
@@ -87,6 +103,5 @@ fn main() -> io::Result<()> {
         }
         length.clear();
     }
-
     Ok(())
 }
