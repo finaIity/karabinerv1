@@ -1,6 +1,5 @@
-use std::io::Write;
 use rand::prelude::*;
-use std::io::{self};
+use std::io::{self, Write};
 use std::process::Command;
 use crate::hash::hash_pw;
 use crate::savetf::savetf;
@@ -19,12 +18,10 @@ fn gen_pass(length: usize) -> String {
         }).collect()
 }
 
-fn clipboard_copy(text: &str) -> io::Result <()> {
-    let mut cmd = Command::new("xclip")
-    .arg("-selection")
-    .arg("clipboard")
-    .stdin(std::process::Stdio::piped())
-    .spawn()?;
+fn clipboard_copy(text: &str) -> io::Result<()> {
+    let mut cmd = Command::new("pbcopy")
+        .stdin(std::process::Stdio::piped())
+        .spawn()?;
 
     if let Some(mut stdin) = cmd.stdin.take() {
         stdin.write_all(text.as_bytes())?;
@@ -35,8 +32,8 @@ fn clipboard_copy(text: &str) -> io::Result <()> {
 
     let output = cmd.wait_with_output()?;
     if !output.status.success() {
-        eprintln!("Failed to execute xclip: {}", output.status);
-        return Err(io::Error::new(io::ErrorKind::Other, "Failed to execute xclip"));
+        eprintln!("Failed to execute pbcopy: {}", output.status);
+        return Err(io::Error::new(io::ErrorKind::Other, "Failed to execute pbcopy"));
     }
     Ok(())
 }
@@ -50,29 +47,46 @@ fn gen_filename() -> String {
     filename.trim().to_string()
 }
 
-fn main() ->io::Result<()> {
-    println!("Welcome to Karabiner !");
-    let password = gen_pass(16);
-    println!("Password generated.");
+fn main() -> io::Result<()> {
+    println!("Welcome to Karabiner!");
 
-    let mut save_password = String::new();
-    print!("Do you want to save the password to a file ? Y/N: ");
-    io::stdout().flush().unwrap();
-    io::stdin()
-        .read_line(&mut save_password)
-        .expect("Failed to read input");
+    let mut length = String::new();
+    loop {
+        print!("Enter the desired password length (7-25): ");
+        io::stdout().flush().unwrap();
+        io::stdin().read_line(&mut length).expect("Failed to read input");
 
-    if save_password.trim().to_uppercase() == "Y" {
-        let filename = gen_filename();
-        let hashed = hash_pw(&password);
-        savetf(&filename, &hashed);
-        println!("Password saved to file {}", filename)
+        if let Ok(len) = length.trim().parse::<usize>() {
+            if len >= 7 && len <= 25 {
+                let password = gen_pass(len);
+                println!("Password generated.");
+
+                let mut save_password = String::new();
+                print!("Do you want to save the password to a file? Y/N: ");
+                io::stdout().flush().unwrap();
+                io::stdin().read_line(&mut save_password).expect("Failed to read input");
+
+                if save_password.trim().to_uppercase() == "Y" {
+                    let filename = gen_filename();
+                    let hashed = hash_pw(&password);
+                    let _ = savetf(&filename, &hashed);
+                    println!("Password saved to file {}", filename);
+                }
+
+                if clipboard_copy(&password).is_ok() {
+                    println!("Password copied to clipboard!");
+                } else {
+                    eprintln!("Error: Couldn't copy password to clipboard.");
+                }
+                break;
+            } else {
+                println!("Please enter a length between 7 and 25.");
+            }
+        } else {
+            println!("Invalid input. Please enter a number.");
+        }
+        length.clear();
     }
 
-    if clipboard_copy(&password).is_ok() {
-        println!("Password copied to clipboard !");
-    } else {
-        eprintln!("Error: Couldn't copy password to clipboard.")
-    }
     Ok(())
 }

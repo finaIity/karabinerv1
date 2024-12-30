@@ -1,7 +1,7 @@
 # Karabiner
 First project in rust, creating a CLI  password generator for Linux and macOS. should work on macOS and Linux. Feedback, ideas and criticism are welcome.
 
-Make sure you have [rust](https://www.rust-lang.org/tools/install) and [xclip](https://github.com/astrand/xclip) installed first.
+Make sure you have [rust](https://www.rust-lang.org/tools/install) and pbcopy installed first.
 Clone repo & use ```cargo build``` to compile and ```cargo run``` to start the program.
 
 Goals for this project:
