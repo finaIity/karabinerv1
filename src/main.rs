@@ -6,6 +6,7 @@ use crate::savetf::savetf;
 use crate::hash::hash_key;
 use crate::userkey::encrypt;
 use crate::file_access::read_decrypt;
+use sha2::{Sha256, Digest};
 
 mod file_access;
 mod savetf;
@@ -74,9 +75,9 @@ fn main() -> io::Result<()> {
         io::stdout().flush().unwrap();
         io::stdin().read_line(&mut key).expect("Failed to read input");
         let key = key.trim().to_string();
-
+        //verify key with stored key
         let stored_key = load_user_key()?;
-        if key == stored_key {
+        if hash_key(&key) == stored_key {
             key
         } else {
             eprintln!("Invalid personal key.");
