@@ -7,6 +7,7 @@ use crate::hash::hash_key;
 use crate::userkey::encrypt;
 use crate::file_access::read_decrypt;
 use sha2::{Sha256, Digest};
+use rpassword::read_password;
 
 mod file_access;
 mod savetf;
