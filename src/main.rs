@@ -71,11 +71,11 @@ fn main() -> io::Result<()> {
     println!("Welcome to Karabiner!");
 
     let personal_key = if fs::metadata(USER_KEY_FILE).is_ok() {
-        let mut key = String::new();
         print!("Enter your personal key: ");
         io::stdout().flush().unwrap();
-        io::stdin().read_line(&mut key).expect("Failed to read input");
+        let key = rpassword::read_password().expect("Failed to read input");
         let key = key.trim().to_string();
+
         //verify key with stored key
         let stored_key = load_user_key()?;
         if hash_key(&key) == stored_key {
@@ -85,10 +85,9 @@ fn main() -> io::Result<()> {
             return Ok(());
         }
     } else {
-        let mut key = String::new();
         print!("Set your personal key: ");
         io::stdout().flush().unwrap();
-        io::stdin().read_line(&mut key).expect("Failed to read input");
+        let key = rpassword::read_password().expect("Failed to read input");
         let key = key.trim().to_string();
         save_user_key(&key)?;
         key
